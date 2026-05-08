@@ -463,14 +463,24 @@ function showSummary() {
           ${likedNo.length ? likedNo.map(([i]) => `<span class="mini-card tag-ln">${cards[i].title}<span class="type-dot ${cards[i].type === 'p' ? 'dot-p' : 'dot-t'}">${cards[i].type === 'p' ? '專' : '轉'}</span></span>`).join('') : '<span class="empty">目前沒有</span>'}
         </div>
       </div>
-      <div class="quad-card full">
+      <div class="quad-card">
         <div class="quad-header">
           <span class="quad-icon">−</span>
-          <span class="quad-title">不喜歡的能力</span>
-          <span class="quad-count">${disliked.length}</span>
+          <span class="quad-title">不喜歡 × 工作有用上</span>
+          <span class="quad-count">${disliked.filter(([,v])=>v.used==='used').length}</span>
         </div>
         <div class="card-tags">
-          ${disliked.length ? disliked.map(([i]) => `<span class="mini-card tag-d">${cards[i].title}<span class="type-dot ${cards[i].type === 'p' ? 'dot-p' : 'dot-t'}">${cards[i].type === 'p' ? '專' : '轉'}</span></span>`).join('') : '<span class="empty">目前沒有</span>'}
+          ${disliked.filter(([,v])=>v.used==='used').length ? disliked.filter(([,v])=>v.used==='used').map(([i]) => `<span class="mini-card tag-d">${cards[i].title}<span class="type-dot ${cards[i].type === 'p' ? 'dot-p' : 'dot-t'}">${cards[i].type === 'p' ? '專' : '轉'}</span></span>`).join('') : '<span class="empty">目前沒有</span>'}
+        </div>
+      </div>
+      <div class="quad-card">
+        <div class="quad-header">
+          <span class="quad-icon">−</span>
+          <span class="quad-title">不喜歡 × 工作沒用上</span>
+          <span class="quad-count">${disliked.filter(([,v])=>v.used==='unused').length}</span>
+        </div>
+        <div class="card-tags">
+          ${disliked.filter(([,v])=>v.used==='unused').length ? disliked.filter(([,v])=>v.used==='unused').map(([i]) => `<span class="mini-card tag-d">${cards[i].title}<span class="type-dot ${cards[i].type === 'p' ? 'dot-p' : 'dot-t'}">${cards[i].type === 'p' ? '專' : '轉'}</span></span>`).join('') : '<span class="empty">目前沒有</span>'}
         </div>
       </div>
     </div>
