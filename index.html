@@ -229,7 +229,10 @@
   .quad-count { font-size: 11px; font-weight: 700; padding: 2px 8px; border-radius: 20px; background: var(--bg); color: var(--text-hint); }
 
   .card-tags { display: flex; flex-wrap: wrap; gap: 6px; }
-  .mini-card { display: inline-flex; align-items: center; font-size: 13px; padding: 6px 12px; border-radius: 20px; font-weight: 500; line-height: 1.3; }
+  .mini-card { display: inline-flex; align-items: center; gap: 5px; font-size: 13px; padding: 6px 10px 6px 12px; border-radius: 20px; font-weight: 500; line-height: 1.3; }
+  .type-dot { font-size: 10px; font-weight: 700; padding: 1px 5px; border-radius: 10px; flex-shrink: 0; }
+  .dot-t { background: rgba(216,90,48,0.15); color: var(--coral-dark); }
+  .dot-p { background: rgba(24,95,165,0.15); color: var(--blue); }
   .tag-ly { background: var(--teal-light); color: var(--teal-dark); }
   .tag-ln { background: var(--coral-light); color: var(--coral-dark); }
   .tag-d  { background: var(--gray-light);  color: #5F5E5A; }
@@ -447,7 +450,7 @@ function showSummary() {
           <span class="quad-count">${likedYes.length}</span>
         </div>
         <div class="card-tags">
-          ${likedYes.length ? likedYes.map(([i]) => `<span class="mini-card tag-ly">${cards[i].title}</span>`).join('') : '<span class="empty">目前沒有</span>'}
+          ${likedYes.length ? likedYes.map(([i]) => `<span class="mini-card tag-ly">${cards[i].title}<span class="type-dot ${cards[i].type === 'p' ? 'dot-p' : 'dot-t'}">${cards[i].type === 'p' ? '專' : '轉'}</span></span>`).join('') : '<span class="empty">目前沒有</span>'}
         </div>
       </div>
       <div class="quad-card">
@@ -457,7 +460,7 @@ function showSummary() {
           <span class="quad-count">${likedNo.length}</span>
         </div>
         <div class="card-tags">
-          ${likedNo.length ? likedNo.map(([i]) => `<span class="mini-card tag-ln">${cards[i].title}</span>`).join('') : '<span class="empty">目前沒有</span>'}
+          ${likedNo.length ? likedNo.map(([i]) => `<span class="mini-card tag-ln">${cards[i].title}<span class="type-dot ${cards[i].type === 'p' ? 'dot-p' : 'dot-t'}">${cards[i].type === 'p' ? '專' : '轉'}</span></span>`).join('') : '<span class="empty">目前沒有</span>'}
         </div>
       </div>
       <div class="quad-card full">
@@ -467,7 +470,7 @@ function showSummary() {
           <span class="quad-count">${disliked.length}</span>
         </div>
         <div class="card-tags">
-          ${disliked.length ? disliked.map(([i]) => `<span class="mini-card tag-d">${cards[i].title}</span>`).join('') : '<span class="empty">目前沒有</span>'}
+          ${disliked.length ? disliked.map(([i]) => `<span class="mini-card tag-d">${cards[i].title}<span class="type-dot ${cards[i].type === 'p' ? 'dot-p' : 'dot-t'}">${cards[i].type === 'p' ? '專' : '轉'}</span></span>`).join('') : '<span class="empty">目前沒有</span>'}
         </div>
       </div>
     </div>
