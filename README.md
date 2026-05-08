@@ -1,0 +1,521 @@
+[ability-cards-game.html](https://github.com/user-attachments/files/27515856/ability-cards-game.html)
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>能力牌卡探索遊戲</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --coral: #D85A30;
+    --coral-light: #FAECE7;
+    --coral-dark: #993C1D;
+    --teal: #1D9E75;
+    --teal-light: #E1F5EE;
+    --teal-dark: #0F6E56;
+    --blue: #185FA5;
+    --blue-light: #E6F1FB;
+    --gray: #888780;
+    --gray-light: #F1EFE8;
+    --bg: #FDF9F6;
+    --surface: #FFFFFF;
+    --text: #2C2C2A;
+    --text-muted: #5F5E5A;
+    --text-hint: #B4B2A9;
+    --border: rgba(0,0,0,0.1);
+    --radius: 16px;
+    --radius-sm: 10px;
+  }
+
+  body {
+    font-family: 'Noto Sans TC', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+
+  header {
+    width: 100%;
+    padding: 1.25rem 2rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border-bottom: 1px solid var(--border);
+    background: var(--surface);
+    position: sticky;
+    top: 0;
+    z-index: 10;
+  }
+
+  header h1 { font-size: 17px; font-weight: 700; color: var(--coral); letter-spacing: 0.02em; }
+  .header-right { font-size: 13px; color: var(--text-muted); }
+
+  .container {
+    width: 100%;
+    max-width: 520px;
+    padding: 2rem 1.25rem 4rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1.25rem;
+  }
+
+  /* Progress dots */
+  .dot-bar {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 5px;
+    justify-content: center;
+    width: 100%;
+    padding: 0 0.5rem;
+  }
+  .dot {
+    width: 9px; height: 9px;
+    border-radius: 50%;
+    background: var(--border);
+    transition: background 0.25s, transform 0.2s;
+  }
+  .dot.current { background: var(--coral); transform: scale(1.3); }
+  .dot.liked { background: var(--teal); }
+  .dot.disliked { background: var(--gray); }
+
+  /* Card */
+  .card-wrapper {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    width: 100%;
+  }
+
+  .nav-btn {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 50%;
+    width: 40px; height: 40px;
+    flex-shrink: 0;
+    cursor: pointer;
+    font-size: 18px;
+    color: var(--text-muted);
+    display: flex; align-items: center; justify-content: center;
+    transition: all 0.15s;
+  }
+  .nav-btn:hover { background: var(--coral-light); border-color: var(--coral); color: var(--coral); }
+  .nav-btn:disabled { opacity: 0.25; pointer-events: none; }
+
+  .card {
+    flex: 1;
+    background: var(--surface);
+    border-radius: var(--radius);
+    border: 1.5px solid var(--border);
+    border-top: 5px solid var(--coral);
+    padding: 2rem 1.5rem 1.5rem;
+    text-align: center;
+    transition: border-top-color 0.3s, border-color 0.3s;
+    min-height: 200px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    position: relative;
+    overflow: hidden;
+  }
+  .card::before {
+    content: '';
+    position: absolute;
+    bottom: -30px; right: -20px;
+    width: 100px; height: 100px;
+    border-radius: 50%;
+    background: var(--coral-light);
+    opacity: 0.5;
+    transition: background 0.3s;
+  }
+  .card.liked { border-top-color: var(--teal); border-color: var(--teal); }
+  .card.liked::before { background: var(--teal-light); }
+  .card.disliked { border-top-color: var(--gray); border-color: var(--gray); }
+  .card.disliked::before { background: var(--gray-light); }
+
+  .badge {
+    font-size: 11px;
+    font-weight: 500;
+    padding: 3px 10px;
+    border-radius: 20px;
+  }
+  .badge-t { background: var(--coral-light); color: var(--coral-dark); }
+  .badge-p { background: var(--blue-light); color: var(--blue); }
+
+  .card-title {
+    font-size: 22px;
+    font-weight: 700;
+    line-height: 1.4;
+    color: var(--text);
+    position: relative;
+    z-index: 1;
+  }
+  .card-num {
+    font-size: 11px;
+    color: var(--text-hint);
+    position: relative;
+    z-index: 1;
+  }
+  .card-emoji {
+    font-size: 28px;
+    position: relative;
+    z-index: 1;
+    opacity: 0.8;
+  }
+
+  /* Checkbox panel */
+  .panel {
+    width: 100%;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 1.25rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+  }
+
+  .panel-label {
+    font-size: 12px;
+    color: var(--text-hint);
+    font-weight: 500;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    margin-bottom: 4px;
+  }
+
+  .opt-row { display: flex; gap: 8px; }
+
+  .opt {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    padding: 10px;
+    border-radius: var(--radius-sm);
+    border: 1.5px solid var(--border);
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--text-muted);
+    background: var(--bg);
+    transition: all 0.15s;
+    user-select: none;
+  }
+  .opt:hover { border-color: rgba(0,0,0,0.2); background: var(--surface); }
+  .opt .icon { font-size: 16px; }
+
+  .opt.a-like { background: var(--teal-light); border-color: var(--teal); color: var(--teal-dark); }
+  .opt.a-dislike { background: var(--gray-light); border-color: var(--gray); color: #444; }
+  .opt.a-yes { background: var(--blue-light); border-color: var(--blue); color: var(--blue); }
+  .opt.a-no { background: var(--coral-light); border-color: var(--coral); color: var(--coral-dark); }
+
+  .divider { height: 1px; background: var(--border); }
+
+  /* Buttons */
+  .btn-row { display: flex; gap: 8px; width: 100%; }
+
+  .btn-skip {
+    flex: 0 0 auto;
+    padding: 12px 18px;
+    border-radius: var(--radius-sm);
+    border: 1px solid var(--border);
+    background: transparent;
+    font-size: 14px;
+    color: var(--text-muted);
+    cursor: pointer;
+    font-family: inherit;
+    transition: all 0.15s;
+  }
+  .btn-skip:hover { background: var(--gray-light); }
+
+  .btn-confirm {
+    flex: 1;
+    padding: 12px;
+    border-radius: var(--radius-sm);
+    border: none;
+    background: var(--coral);
+    color: white;
+    font-size: 15px;
+    font-weight: 700;
+    cursor: pointer;
+    font-family: inherit;
+    transition: all 0.15s;
+    letter-spacing: 0.02em;
+  }
+  .btn-confirm:hover { background: var(--coral-dark); }
+  .btn-confirm:disabled { background: var(--border); color: var(--text-hint); cursor: default; }
+
+  /* Summary */
+  .done-banner {
+    width: 100%;
+    background: var(--teal-light);
+    border: 1.5px solid var(--teal);
+    border-radius: var(--radius);
+    padding: 1.5rem;
+    text-align: center;
+  }
+  .done-banner h2 { font-size: 20px; font-weight: 700; color: var(--teal-dark); margin-bottom: 4px; }
+  .done-banner p { font-size: 14px; color: var(--teal); }
+
+  .summary-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; width: 100%; }
+  .summary-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 1rem;
+  }
+  .summary-card.full { grid-column: 1 / -1; }
+  .summary-card h4 { font-size: 13px; font-weight: 700; color: var(--text-muted); margin-bottom: 10px; }
+
+  .tag {
+    display: inline-block;
+    font-size: 12px;
+    padding: 4px 10px;
+    border-radius: 20px;
+    margin: 3px 2px;
+  }
+  .tag-ly { background: var(--teal-light); color: var(--teal-dark); }
+  .tag-ln { background: var(--coral-light); color: var(--coral-dark); }
+  .tag-d { background: var(--gray-light); color: #5F5E5A; }
+  .empty { font-size: 13px; color: var(--text-hint); font-style: italic; }
+
+  .reset-row { display: flex; gap: 8px; justify-content: center; margin-top: 0.5rem; width: 100%; }
+  .btn-reset { padding: 10px 20px; border-radius: var(--radius-sm); border: 1px solid var(--border); background: transparent; font-size: 14px; color: var(--text-muted); cursor: pointer; font-family: inherit; transition: all 0.15s; }
+  .btn-reset:hover { background: var(--gray-light); }
+  .btn-back { padding: 10px 20px; border-radius: var(--radius-sm); border: none; background: var(--coral); color: white; font-size: 14px; font-weight: 700; cursor: pointer; font-family: inherit; transition: all 0.15s; }
+  .btn-back:hover { background: var(--coral-dark); }
+
+  @media (max-width: 480px) {
+    .card-title { font-size: 18px; }
+    .summary-grid { grid-template-columns: 1fr; }
+    .summary-card.full { grid-column: 1; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>🦜 能力牌卡探索</h1>
+  <div class="header-right" id="progress-info">第 1 張 / 共 34 張</div>
+</header>
+
+<div class="container" id="app">
+
+  <div class="dot-bar" id="dot-bar"></div>
+
+  <div id="game-view">
+    <div class="card-wrapper">
+      <button class="nav-btn" id="prev-btn" onclick="nav(-1)">&#8249;</button>
+      <div class="card" id="main-card">
+        <span class="badge" id="card-badge"></span>
+        <div class="card-title" id="card-title"></div>
+        <div class="card-emoji">🦜</div>
+        <div class="card-num" id="card-num"></div>
+      </div>
+      <button class="nav-btn" id="next-btn" onclick="nav(1)">&#8250;</button>
+    </div>
+
+    <div class="panel">
+      <div>
+        <div class="panel-label">我對這個能力的感受</div>
+        <div class="opt-row">
+          <div class="opt" id="opt-like" onclick="pick('like')"><span class="icon">♡</span> 喜歡</div>
+          <div class="opt" id="opt-dislike" onclick="pick('dislike')"><span class="icon">−</span> 不喜歡</div>
+        </div>
+      </div>
+      <div class="divider"></div>
+      <div>
+        <div class="panel-label">這個能力在我現在的工作</div>
+        <div class="opt-row">
+          <div class="opt" id="opt-used" onclick="pick('used')"><span class="icon">✓</span> 有用上</div>
+          <div class="opt" id="opt-unused" onclick="pick('unused')"><span class="icon">✕</span> 沒用上</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="btn-row">
+      <button class="btn-skip" onclick="skip()">跳過這張</button>
+      <button class="btn-confirm" id="confirm-btn" onclick="confirm()" disabled>確認選好了 ✓</button>
+    </div>
+  </div>
+
+  <div id="summary-view" style="display:none; width:100%; display:flex; flex-direction:column; gap:1rem; align-items:center;">
+  </div>
+
+</div>
+
+<script>
+const cards = [
+  { title: "發現問題或異常的能力", type: "t", num: "32 執行力" },
+  { title: "主動學習與轉化能力", type: "t", num: "41 創造力" },
+  { title: "找出因果邏輯規律的能力", type: "t", num: "35 分析力" },
+  { title: "家庭重要他人", type: "p", num: "17" },
+  { title: "媒體網路自學", type: "p", num: "20" },
+  { title: "公司工作經驗", type: "p", num: "19" },
+  { title: "自我管理能力", type: "t", num: "43 情感力" },
+  { title: "分析與判斷能力", type: "t", num: "36 分析力" },
+  { title: "規劃與研究能力", type: "t", num: "31 分析力" },
+  { title: "想像力", type: "t", num: "39 創造力" },
+  { title: "覺察力", type: "t", num: "44 情感力" },
+  { title: "篩選訊息的能力", type: "t", num: "33 分析力" },
+  { title: "社團與活動經驗", type: "p", num: "18" },
+  { title: "學校", type: "p", num: "16" },
+  { title: "將靈感具體化的能力", type: "t", num: "38 創造力" },
+  { title: "時間管理能力", type: "t", num: "26 執行力" },
+  { title: "問題解決與危機處理能力", type: "t", num: "27 執行力" },
+  { title: "語言能力", type: "t", num: "30 執行力" },
+  { title: "情緒與壓力調適能力", type: "t", num: "42 情感力" },
+  { title: "文字圖像藝術創作能力", type: "t", num: "37 創造力" },
+  { title: "領導與管理能力", type: "t", num: "23 人際力" },
+  { title: "復原力", type: "t", num: "46 情感力" },
+  { title: "肢體運用能力", type: "t", num: "29 執行力" },
+  { title: "發現美的能力", type: "t", num: "40 創造力" },
+  { title: "文書及事務處理能力", type: "t", num: "28 執行力" },
+  { title: "理解能力", type: "t", num: "34 分析力" },
+  { title: "演說與表達能力", type: "t", num: "22 人際力" },
+  { title: "挫折耐受力", type: "t", num: "45 情感力" },
+  { title: "與人建立關係的能力", type: "t", num: "25 人際力" },
+  { title: "溝通協調能力", type: "t", num: "21 人際力" },
+  { title: "團隊合作能力", type: "t", num: "24 人際力" },
+  { title: "自我覺察能力", type: "t", num: "47 情感力" },
+  { title: "多元文化理解能力", type: "t", num: "48 人際力" },
+  { title: "數位工具應用能力", type: "t", num: "49 執行力" },
+];
+
+let cur = 0;
+let sel = {};
+let tLike = null, tUsed = null;
+
+function renderDots() {
+  const bar = document.getElementById('dot-bar');
+  bar.innerHTML = '';
+  cards.forEach((_, i) => {
+    const d = document.createElement('div');
+    d.className = 'dot';
+    if (sel[i]) d.className += sel[i].like === 'like' ? ' liked' : ' disliked';
+    else if (i === cur) d.className += ' current';
+    bar.appendChild(d);
+  });
+}
+
+function renderCard() {
+  const c = cards[cur];
+  document.getElementById('card-title').textContent = c.title;
+  document.getElementById('card-num').textContent = c.num;
+  const badge = document.getElementById('card-badge');
+  badge.textContent = c.type === 'p' ? '專業能力' : '可轉移能力';
+  badge.className = 'badge ' + (c.type === 'p' ? 'badge-p' : 'badge-t');
+
+  const saved = sel[cur];
+  tLike = saved ? saved.like : null;
+  tUsed = saved ? saved.used : null;
+
+  updateUI();
+  document.getElementById('progress-info').textContent = `第 ${cur+1} 張 / 共 ${cards.length} 張`;
+  document.getElementById('prev-btn').disabled = cur === 0;
+  document.getElementById('next-btn').disabled = cur === cards.length - 1;
+  renderDots();
+}
+
+function updateUI() {
+  document.getElementById('opt-like').className = 'opt' + (tLike === 'like' ? ' a-like' : '');
+  document.getElementById('opt-dislike').className = 'opt' + (tLike === 'dislike' ? ' a-dislike' : '');
+  document.getElementById('opt-used').className = 'opt' + (tUsed === 'used' ? ' a-yes' : '');
+  document.getElementById('opt-unused').className = 'opt' + (tUsed === 'unused' ? ' a-no' : '');
+  document.getElementById('confirm-btn').disabled = !(tLike && tUsed);
+
+  const card = document.getElementById('main-card');
+  card.className = 'card';
+  if (tLike === 'like') card.className += ' liked';
+  else if (tLike === 'dislike') card.className += ' disliked';
+}
+
+function pick(type) {
+  if (type === 'like') tLike = tLike === 'like' ? null : 'like';
+  else if (type === 'dislike') tLike = tLike === 'dislike' ? null : 'dislike';
+  else if (type === 'used') tUsed = tUsed === 'used' ? null : 'used';
+  else if (type === 'unused') tUsed = tUsed === 'unused' ? null : 'unused';
+  updateUI();
+}
+
+function confirm() {
+  if (!tLike || !tUsed) return;
+  sel[cur] = { like: tLike, used: tUsed };
+  if (cur < cards.length - 1) { cur++; renderCard(); }
+  else showSummary();
+}
+
+function skip() {
+  if (cur < cards.length - 1) { cur++; renderCard(); }
+}
+
+function nav(d) {
+  cur = Math.max(0, Math.min(cards.length - 1, cur + d));
+  renderCard();
+}
+
+function showSummary() {
+  document.getElementById('game-view').style.display = 'none';
+  const sv = document.getElementById('summary-view');
+  sv.style.display = 'flex';
+
+  const total = Object.keys(sel).length;
+  const liked = Object.entries(sel).filter(([,v]) => v.like === 'like');
+  const likedYes = liked.filter(([,v]) => v.used === 'used');
+  const likedNo = liked.filter(([,v]) => v.used === 'unused');
+  const disliked = Object.entries(sel).filter(([,v]) => v.like === 'dislike');
+
+  sv.innerHTML = `
+    <div class="done-banner">
+      <h2>🎉 完成！選了 ${total} 張牌卡</h2>
+      <p>以下是你的能力地圖整理</p>
+    </div>
+    <div class="summary-grid">
+      <div class="summary-card">
+        <h4>♡ 喜歡 × 工作有用上（${likedYes.length}）</h4>
+        ${likedYes.length ? likedYes.map(([i]) => `<span class="tag tag-ly">${cards[i].title}</span>`).join('') : '<span class="empty">目前沒有</span>'}
+      </div>
+      <div class="summary-card">
+        <h4>♡ 喜歡 × 工作沒用上（${likedNo.length}）</h4>
+        ${likedNo.length ? likedNo.map(([i]) => `<span class="tag tag-ln">${cards[i].title}</span>`).join('') : '<span class="empty">目前沒有</span>'}
+      </div>
+      <div class="summary-card full">
+        <h4>− 不喜歡的能力（${disliked.length}）</h4>
+        ${disliked.length ? disliked.map(([i]) => `<span class="tag tag-d">${cards[i].title}</span>`).join('') : '<span class="empty">目前沒有</span>'}
+      </div>
+    </div>
+    <div class="reset-row">
+      <button class="btn-reset" onclick="goBack()">繼續翻牌卡</button>
+      <button class="btn-back" onclick="restart()">重新開始</button>
+    </div>
+  `;
+}
+
+function goBack() {
+  document.getElementById('summary-view').style.display = 'none';
+  document.getElementById('game-view').style.display = 'block';
+  cur = 0; renderCard();
+}
+
+function restart() {
+  sel = {}; cur = 0;
+  document.getElementById('summary-view').style.display = 'none';
+  document.getElementById('game-view').style.display = 'block';
+  renderCard();
+}
+
+renderCard();
+</script>
+</body>
+</html>
